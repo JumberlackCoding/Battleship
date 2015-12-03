@@ -11,12 +11,16 @@ public class PlayerSyncRotation : NetworkBehaviour
 
     [SerializeField]
     private float lerpRate = 15;
+    [SerializeField]
+    private float threshold = 0.1f;
 
     [SyncVar] // Tells server to take this value and synchronize it among the clients
     private Quaternion syncRot;
     [SyncVar]
     private Quaternion syncCamRot;
 
+    private Quaternion lastPlayerRot;
+    private Quaternion lastCamRot;
 
     // Update is called once per frame
     void FixedUpdate()
@@ -39,6 +43,7 @@ public class PlayerSyncRotation : NetworkBehaviour
     {
         syncRot = playerRot;
         syncCamRot = camRot;
+       // print( "bye" );
     }
 
     [ClientCallback] // Won't generate warnings
@@ -46,7 +51,12 @@ public class PlayerSyncRotation : NetworkBehaviour
     {
         if( isLocalPlayer )
         {
-            CmdProvideRotationsToSever( myTransform.rotation, camTransform.rotation );
+            if( ( Quaternion.Angle( myTransform.rotation, lastPlayerRot ) > threshold ) || ( Quaternion.Angle( camTransform.rotation, lastCamRot ) > threshold ) )
+            {
+                CmdProvideRotationsToSever( myTransform.rotation, camTransform.rotation );
+                lastPlayerRot = myTransform.rotation;
+                lastCamRot = myTransform.rotation;
+            }
         }
     }
 }
