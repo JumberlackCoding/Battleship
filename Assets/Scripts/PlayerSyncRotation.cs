@@ -22,11 +22,15 @@ public class PlayerSyncRotation : NetworkBehaviour
     private Quaternion lastPlayerRot;
     private Quaternion lastCamRot;
 
+    void Update()
+    {
+        LerpRotations();
+    }
+
     // Update is called once per frame
     void FixedUpdate()
     {
         TransmitRotations();
-        LerpRotations();
     }
 
     void LerpRotations()

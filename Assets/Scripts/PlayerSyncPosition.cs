@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
-public class PlayerSyncPosition : NetworkBehaviour {
+public class PlayerSyncPosition : NetworkBehaviour
+{
 
     [SerializeField]
     private Transform myTransform;
@@ -12,16 +14,37 @@ public class PlayerSyncPosition : NetworkBehaviour {
     [SerializeField]
     private float threshold = 0.4f;
 
+    [SerializeField]
+    private NetworkManager nManager;
+
+    [SerializeField]
+    private Text latencyText;
+
+    private NetworkClient nClient;
+
+    private int latency;
+
     [SyncVar] // Tells server to take this value and synchronize it among the clients
     private Vector3 syncPos;
 
     private Vector3 lastPos;
 
-	// Update is called once per frame
-	void FixedUpdate () {
-        TransmitPosition();
+    void Awake()
+    {
+        nClient = nManager.client;
+    }
+
+    void Update()
+    {
         LerpPosition();
-	}
+        ShowLatency();
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+        TransmitPosition();
+    }
 
     void LerpPosition()
     {
@@ -35,7 +58,7 @@ public class PlayerSyncPosition : NetworkBehaviour {
     void CmdProvidePositionToSever( Vector3 pos ) // must be called Cmd*
     {
         syncPos = pos;
-       // print( "hi" );
+        // print( "hi" );
     }
 
     [ClientCallback] // Won't generate warnings
@@ -47,4 +70,14 @@ public class PlayerSyncPosition : NetworkBehaviour {
             lastPos = myTransform.position;
         }
     }
+
+    void ShowLatency()
+    {
+        if( isLocalPlayer )
+        {
+            latency = nClient.GetRTT();
+            latencyText.text = latency.ToString();
+        }
+    }
+
 }
